@@ -2,16 +2,17 @@
 import { ref } from 'vue';
 
 const searchText = ref('');
-const onSearch = (val:string) => {
-  tagList.value = tagList.value.map(parentTag => {
-    parentTag.children = parentTag.children.filter(item => item.text.includes(searchText.value));
-    return parentTag;
-  })
+const onSearch = () => {
+  tagList.value = originalTagList.map(parentTag => {
+    const tempChildren = [...parentTag.children];
+    const tempParentTag = {...parentTag};
+    tempParentTag.children = tempChildren.filter(item => item.text.includes(searchText.value));
+    if(tempParentTag.children.length === 0){
+      return null;
+    }
+    return tempParentTag;
+  }).filter(tag => tag !== null);
 }
-const onCancel = () => {
-  searchText.value = '';
-}
-
 
 //移除标签
 const close = (tag:string) => {
@@ -42,7 +43,6 @@ const originalTagList = [{
       { text: '工作', id: '工作' },
     ],
   },
-  { text: '福建', disabled: true },
 ];
 let tagList = ref(originalTagList);
 
@@ -54,8 +54,7 @@ let tagList = ref(originalTagList);
         v-model="searchText"
         show-action
         placeholder="请输入搜索关键词"
-        @search="onSearch"
-        @cancel="onCancel"
+        @update:model-value="onSearch"
     />
   </form>
   <van-divider content-position="left">已选标签</van-divider>
